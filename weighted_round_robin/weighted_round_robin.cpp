@@ -1,5 +1,5 @@
 //Take (5) jobs with release time and execution time and assign them on a single processor based on the
-//Round Robin Approach
+//Weighted Round Robin Approach
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -7,7 +7,7 @@ using namespace std;
 
 #define tab "\t"
 #define dtab "\t\t"
-#define quantum 5
+#define quantum 1
 
 struct job{
 	char job_id;
@@ -15,6 +15,7 @@ struct job{
 	int execution_time;
 	int remaining_time;
 	int last_execution;
+	int weight;
 };
 
 bool operator<(const job &a, const job &b){
@@ -27,8 +28,8 @@ void input_jobs(vector<job> &jobs){
 	cin>>n;
 	for(int i=0; i<n; ++i){
 		job j;
-		cout<<"\nEnter the job_id (single char), release time and execution time of the job\n";
-		cin>>j.job_id>>j.release_time>>j.execution_time;
+		cout<<"\nEnter the job_id (single char), release time, execution time and weight of the job\n";
+		cin>>j.job_id>>j.release_time>>j.execution_time>>j.weight;
 		j.remaining_time = j.execution_time;
 		j.last_execution = j.release_time;
 		jobs.push_back(j);
@@ -51,19 +52,20 @@ void execute_jobs(vector<job> &jobs){
 	cout<<"\njob_id"<<tab<<"release_time"<<tab<<"execution started"<<tab<<"period of execution"<<tab<<"remaining_time\n";
 	while(exec_count!=0){
 		for(int i=0; i<n; ){
+			int exec_limit = quantum*jobs[i].weight;
 			if(jobs[i].release_time <=time && jobs[i].remaining_time>0){
 				print_execution_stat(time, jobs[i]);
-				if(jobs[i].remaining_time <= quantum){
+				if(jobs[i].remaining_time <= exec_limit){
 					cout<<jobs[i].remaining_time;
 					time += jobs[i].remaining_time;
 					jobs[i].remaining_time = 0;
 					exec_count--;
 				}else{
-					cout<<quantum;
+					cout<<exec_limit;
 					waiting_time += time - jobs[i].last_execution;
-					time +=quantum;
+					time += exec_limit;
 					jobs[i].last_execution = time;
-					jobs[i].remaining_time -= quantum;
+					jobs[i].remaining_time -= exec_limit;
 				}
 				cout<<dtab<<tab<<jobs[i].remaining_time;
 				++i;
@@ -82,8 +84,8 @@ void execute_jobs(vector<job> &jobs){
 int main(){
 	vector<job> jobs;
 	input_jobs(jobs);
-	
+
 	execute_jobs(jobs);
-	
+
 return 0;
 }
